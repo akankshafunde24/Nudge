@@ -1,1 +1,14 @@
-{"compilerOptions":{"target":"ES2022","lib":["ES2022","DOM"],"strict":true,"module":"NodeNext","moduleResolution":"NodeNext","rootDir":".","outDir":".test-dist","skipLibCheck":true,"declaration":false},"include":["lib/core/**/*.ts"]}
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "rootDir": ".",
+    "outDir": ".test-dist",
+    "skipLibCheck": true,
+    "declaration": false
+  },
+  "include": ["lib/core/**/*.ts"]
+}
