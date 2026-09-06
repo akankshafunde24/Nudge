@@ -1,0 +1,20 @@
+"use client";
+import { AppShell } from "@/components/AppShell";
+import { PageState } from "@/components/PageState";
+import { PlantLifecycle, PlantVisual } from "@/components/PlantVisual";
+import { useNudgeData } from "@/lib/client/useNudgeData";
+
+export default function RewardsPage(){
+ const {data,loading,error,refresh}=useNudgeData(); const s=data?.snapshot; const coins=s?.rewards.reduce((a,r)=>a+Number(r.coins||0),0)||0; const nextLevel=s?Math.ceil((s.growth.totalXp+1)/250)*250:250; const xpInto=s?s.growth.totalXp-(s.growth.level-1)*250:0;
+ const badges=s?[{icon:"🌱",name:"First Growth",desc:"Your Nudge journey has begun.",ok:s.growth.totalXp>0},{icon:"🔥",name:"Momentum Maker",desc:"Strong recent check-in rhythm.",ok:s.growth.momentum==="strong"},{icon:"🌿",name:"Comeback",desc:"Returning after a break counts.",ok:s.rewards.some(r=>r.action==="comeback")},{icon:"💰",name:"Money Aware",desc:"Logged spending with intention.",ok:s.rewards.filter(r=>r.action==="expense_logged").length>=5},{icon:"🪴",name:"Future You",desc:"Investing habit recorded.",ok:s.investments.length>0},{icon:"✎",name:"Reflection",desc:"Kept meaningful moments.",ok:s.journal.length>=2},{icon:"🛡️",name:"Goal Builder",desc:"A money goal is in motion.",ok:s.goals.some(g=>g.current_amount>0)},{icon:"☀️",name:"Showing Up",desc:"Ten daily check-ins recorded.",ok:s.checkIns.length>=10}]:[];
+ return <AppShell name={s?.settings.display_name||"you"} spreadsheetUrl={data?.spreadsheetUrl} demo={data?.demo} onRefresh={refresh}><PageState loading={loading} error={error}>{s&&<>
+  <div className="page-head"><div><span className="eyebrow">Reward growth, not pressure</span><h1>Your progress has roots.</h1><p>XP remembers the lifetime journey. Momentum is allowed to change.</p></div><span className="date-pill">🪙 {coins.toLocaleString()} Quest Coins</span></div>
+  <section className="card reward-hero"><div style={{textAlign:"center"}}><PlantVisual stage={s.growth.plantStage} resting={s.growth.momentum==="resting"}/></div><div><span className="eyebrow">Level {s.growth.level}</span><h2 style={{fontSize:34,margin:"5px 0"}}>Your {s.growth.plantStage} keeps its history.</h2><p className="helper">Missing days never send you back to Seed. A quieter period becomes “resting”; returning creates new growth.</p><div className="xp-line"><span style={{width:`${Math.min(100,(xpInto/250)*100)}%`}}/></div><small>{s.growth.totalXp.toLocaleString()} XP · next level at {nextLevel.toLocaleString()} XP</small><div style={{marginTop:26}}><PlantLifecycle current={s.growth.plantStage}/></div></div></section>
+  <div className="spacer-18"/>
+  <div className="reward-stats"><div className="reward-stat"><strong>{s.growth.totalXp.toLocaleString()}</strong><small>Total XP</small></div><div className="reward-stat"><strong>{coins.toLocaleString()}</strong><small>Quest Coins</small></div><div className="reward-stat"><strong>{badges.filter(b=>b.ok).length}/{badges.length}</strong><small>Badges unlocked</small></div></div>
+  <div className="spacer-18"/>
+  <section className="card"><div className="section-title"><h2>Badges that mean something</h2><span>Comebacks matter too</span></div><div className="badge-grid">{badges.map(b=><article className="badge" key={b.name} style={{opacity:b.ok?1:.38}}><div className="badge-icon">{b.icon}</div><h4>{b.name}</h4><p>{b.ok?b.desc:"Still growing toward this."}</p></article>)}</div></section>
+  <div className="spacer-18"/>
+  <section className="card"><div className="section-title"><h2>Your reward shelf</h2><span>You decide what rewards mean</span></div><div className="reward-shop"><div className="reward-item"><span>☕</span><b>Favourite coffee</b><small>100 coins · example</small></div><div className="reward-item"><span>🎬</span><b>Movie evening</b><small>250 coins · example</small></div><div className="reward-item"><span>🌿</span><b>Self-care hour</b><small>500 coins · example</small></div></div><p className="helper" style={{marginTop:14}}>Reward-shop items are playful prompts, not permissions you must earn. You are allowed rest and joy without completing tasks.</p></section>
+ </>}</PageState></AppShell>
+}

@@ -1,0 +1,2 @@
+export interface InvestorAnswers{horizon:"short"|"medium"|"long";volatilityComfort:"low"|"medium"|"high";priority:"preserve"|"balanced"|"growth"}
+export function investorProfile(a:InvestorAnswers){const score=(a.horizon==="long"?2:a.horizon==="medium"?1:0)+(a.volatilityComfort==="high"?2:a.volatilityComfort==="medium"?1:0)+(a.priority==="growth"?2:a.priority==="balanced"?1:0);if(score<=1)return{name:"Steady Protector",risk:"Low",score};if(score<=4)return{name:"Balanced Builder",risk:"Moderate",score};return{name:"Growth Explorer",risk:"High",score}}
