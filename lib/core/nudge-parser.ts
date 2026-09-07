@@ -26,22 +26,22 @@ const dateFrom=(text:string,today:string)=>/\byesterday\b/i.test(text)?shiftDate
 
 function inferCategory(text:string){
  const s=text.toLowerCase();
- if(/dinner|lunch|breakfast|food|restaurant|cafe|coffee|pizza|grocer|snack|meal/.test(s))return"Food";
- if(/uber|ola|auto|cab|taxi|train|bus|flight|travel|petrol|fuel|metro/.test(s))return"Travel";
- if(/shop|clothes|dress|shoe|amazon|flipkart|purchase/.test(s))return"Shopping";
- if(/electric|wifi|internet|rent|bill|recharge|utility/.test(s))return"Bills";
- if(/movie|concert|party|game|fun|netflix|spotify/.test(s))return"Fun";
- if(/doctor|medicine|pharmacy|salon|health|personal care/.test(s))return"Health";
- if(/course|book|class|learn|exam/.test(s))return"Learning";
- if(/gift|birthday|family/.test(s))return"Gifts";
- return"Other";
+ if(/dinner|lunch|breakfast|food|restaurant|cafe|coffee|pizza|grocer|snack|meal/.test(s))return "Food";
+ if(/uber|ola|auto|cab|taxi|train|bus|flight|travel|petrol|fuel|metro/.test(s))return "Travel";
+ if(/shop|clothes|dress|shoe|amazon|flipkart|purchase/.test(s))return "Shopping";
+ if(/electric|wifi|internet|rent|bill|recharge|utility/.test(s))return "Bills";
+ if(/movie|concert|party|game|fun|netflix|spotify/.test(s))return "Fun";
+ if(/doctor|medicine|pharmacy|salon|health|personal care/.test(s))return "Health";
+ if(/course|book|class|learn|exam/.test(s))return "Learning";
+ if(/gift|birthday|family/.test(s))return "Gifts";
+ return "Other";
 }
 
 function inferDescription(text:string,category:string){
  const s=text.toLowerCase();
- if(/dinner/.test(s))return"Dinner"; if(/lunch/.test(s))return"Lunch"; if(/breakfast/.test(s))return"Breakfast";
- if(/grocer/.test(s))return"Groceries"; if(/coffee|cafe/.test(s))return"Coffee"; if(/movie/.test(s))return"Movie";
- if(/uber|ola|auto|cab|taxi/.test(s))return"Ride"; if(/flight/.test(s))return"Flight"; if(/train/.test(s))return"Train";
+ if(/dinner/.test(s))return "Dinner"; if(/lunch/.test(s))return "Lunch"; if(/breakfast/.test(s))return "Breakfast";
+ if(/grocer/.test(s))return "Groceries"; if(/coffee|cafe/.test(s))return "Coffee"; if(/movie/.test(s))return "Movie";
+ if(/uber|ola|auto|cab|taxi/.test(s))return "Ride"; if(/flight/.test(s))return "Flight"; if(/train/.test(s))return "Train";
  return category;
 }
 
@@ -51,7 +51,7 @@ function parseFriends(text:string){
  return[] as string[];
 }
 
-function moodFrom(text:string){const s=text.toLowerCase();if(/amazing|great|very good|fantastic|happy|excellent/.test(s))return5;if(/good|nice|pretty good|calm|fine/.test(s))return4;if(/okay|ok|normal|neutral/.test(s))return3;if(/low|tired|sad|not great|bad/.test(s))return2;if(/awful|terrible|very sad|exhausted/.test(s))return1;return undefined}
+function moodFrom(text:string){const s=text.toLowerCase();if(/amazing|great|very good|fantastic|happy|excellent/.test(s))return 5;if(/good|nice|pretty good|calm|fine/.test(s))return 4;if(/okay|ok|normal|neutral/.test(s))return 3;if(/low|tired|sad|not great|bad/.test(s))return 2;if(/awful|terrible|very sad|exhausted/.test(s))return 1;return undefined}
 
 export function parseNudgeText(raw:string,today:string):ParsedNudge{
  const original=raw.trim(); const text=original.toLowerCase(); const date=dateFrom(text,today);
