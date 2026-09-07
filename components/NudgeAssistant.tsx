@@ -1,6 +1,7 @@
 "use client";
 import { FormEvent, useEffect, useState } from "react";
 import { apiPost } from "@/lib/client/api";
+import { queueOffline } from "@/lib/client/offline";
 
 type Draft={
  intent:string;original:string;date:string;amount?:number;category?:string;description?:string;friends?:string[];personalAmount?:number;receivable?:number;splits?:Array<{person:string;amount:number}>;
@@ -14,15 +15,18 @@ export function NudgeAssistant({onClose,onSaved,onManual}:{onClose:()=>void;onSa
  useEffect(()=>{try{setText(localStorage.getItem("nudge:assistantDraft")||"")}catch{}},[]);
  useEffect(()=>{try{if(text)localStorage.setItem("nudge:assistantDraft",text);else localStorage.removeItem("nudge:assistantDraft")}catch{}},[text]);
  async function understand(e?:FormEvent){e?.preventDefault();if(!text.trim())return;setBusy(true);setError("");setAnswer("");setDraft(null);try{const r=await apiPost<{draft:Draft}>("/api/nudge/interpret",{text});if(r.draft.intent==="question"){const q=await apiPost<{answer:string}>("/api/insights",{question:text});setAnswer(q.answer)}else setDraft(r.draft)}catch(e){setError(e instanceof Error?e.message:"Nudge could not understand that yet.")}finally{setBusy(false)}}
- async function confirm(){if(!draft)return;setBusy(true);setError("");try{
-  if(draft.intent==="expense"||draft.intent==="income"||draft.intent==="refund")await apiPost("/api/transactions",{client_id:crypto.randomUUID().replaceAll("-",""),date:draft.date,type:draft.intent,amount:draft.amount,category:draft.category,description:draft.description,splits:draft.splits||[]});
+ async function confirm(){if(!draft)return;setBusy(true);setError("");let offlineSaved=false;try{
+  if(draft.intent==="expense"||draft.intent==="income"||draft.intent==="refund"){
+   const body={client_id:crypto.randomUUID().replaceAll("-",""),date:draft.date,type:draft.intent,amount:draft.amount,category:draft.category,description:draft.description,splits:draft.splits||[]};
+   try{await apiPost("/api/transactions",body)}catch(e){if(!navigator.onLine||e instanceof TypeError){await queueOffline("/api/transactions",body);offlineSaved=true}else throw e}
+  }
   else if(draft.intent==="investment")await apiPost("/api/investments",{date:draft.date,asset_name:draft.assetName,asset_type:draft.assetType||"Other",amount_invested:draft.amount,transaction_type:"buy"});
   else if(draft.intent==="goal_contribution")await apiPost("/api/goals/contribute",{goalId:draft.goalId,amount:draft.amount,date:draft.date});
   else if(draft.intent==="settlement")for(const s of draft.settlements||[])await apiPost("/api/splits/settle",{splitId:s.splitId,amount:s.amount});
   else if(draft.intent==="checkin")await apiPost("/api/checkins",{date:draft.date,mood:draft.mood||3,energy:3,movement_minutes:draft.movementMinutes||0,food_feeling:"not_sure",reflection:draft.description||draft.original});
   else if(draft.intent==="journal")await apiPost("/api/journal",{date:draft.date,entry_type:"quick_memory",content:draft.content||draft.original});
   else throw new Error("This one needs the manual form so you can choose the missing details.");
-  localStorage.removeItem("nudge:assistantDraft");setText("");onSaved(draft.intent==="settlement"?"Balance updated — repayment stayed out of income. 🤝":"Nudge saved it. One sentence was enough. 🌱");onClose();
+  localStorage.removeItem("nudge:assistantDraft");setText("");onSaved(offlineSaved?"Saved offline. Nudge will sync the money update when you reconnect. ☁️":draft.intent==="settlement"?"Balance updated — repayment stayed out of income. 🤝":"Nudge saved it. One sentence was enough. 🌱");onClose();
  }catch(e){setError(e instanceof Error?e.message:"Could not save this update.")}finally{setBusy(false)}}
  return <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}><section className="modal-card assistant-modal" role="dialog" aria-modal="true" aria-label="Tell Nudge anything">
   <div className="modal-head"><div><span className="eyebrow">✨ Nudge assistant</span><h2>Tell Nudge what happened.</h2></div><button onClick={onClose} aria-label="Close">×</button></div>
