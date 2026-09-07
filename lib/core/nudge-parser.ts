@@ -57,27 +57,27 @@ export function parseNudgeText(raw:string,today:string):ParsedNudge{
  const original=raw.trim(); const text=original.toLowerCase(); const date=dateFrom(text,today);
  if(!original)return{intent:"unknown",confidence:"low",original,date};
 
- const movement=text.match(/(?:walked|walk|ran|run|jogged|worked out|workout|exercised|exercise|yoga).*?([0-9]{1,3})\s*(?:min|mins|minutes)/i);
- if(movement||/\b(feeling|mood|energy)\b/.test(text))return{intent:"checkin",confidence:movement?"high":"medium",original,date,movementMinutes:movement?Number(movement[1]):undefined,mood:moodFrom(text),description:original};
+ const movement=original.match(/(?:walked|walk|ran|run|jogged|worked out|workout|exercised|exercise|yoga).*?([0-9]{1,3})\s*(?:min|mins|minutes)/i);
+ if(movement||/\b(feeling|mood|energy)\b/i.test(original))return{intent:"checkin",confidence:movement?"high":"medium",original,date,movementMinutes:movement?Number(movement[1]):undefined,mood:moodFrom(original),description:original};
 
- const settlement=text.match(/^\s*([a-z][a-z .'-]{0,40}?)\s+(?:returned|paid me|gave me back|sent me back|repaid).*?(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)/i);
+ const settlement=original.match(/^\s*([a-z][a-z .'-]{0,40}?)\s+(?:returned|paid me|gave me back|sent me back|repaid).*?(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)/i);
  if(settlement)return{intent:"settlement",confidence:"high",original,date,person:cleanName(settlement[1]),amount:Number(settlement[2].replaceAll(",","")),description:`Settlement from ${cleanName(settlement[1])}`};
 
- const investment=text.match(/(?:invested|invest|sip|bought|buy|deposited|deposit)\s*(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)\s+(?:in|into|towards?)\s+(.+)/i);
+ const investment=original.match(/(?:invested|invest|sip|bought|buy|deposited|deposit)\s*(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)\s+(?:in|into|towards?)\s+(.+)/i);
  if(investment){const assetName=cleanName(investment[2].replace(/\b(today|yesterday)\b/gi,"").trim());return{intent:"investment",confidence:"high",original,date,amount:Number(investment[1].replaceAll(",","")),assetName,assetType:/fund|sip/i.test(assetName)?"Mutual Fund":/gold/i.test(assetName)?"Gold":/fd|fixed deposit/i.test(assetName)?"RD / FD":/stock|share/i.test(assetName)?"Stocks":"Other",description:`Investment in ${assetName}`};}
 
- const refund=text.match(/(?:refund|refunded|got back)\D{0,20}(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)/i);
- if(refund)return{intent:"refund",confidence:"high",original,date,amount:Number(refund[1].replaceAll(",","")),category:inferCategory(text),description:"Refund"};
+ const refund=original.match(/(?:refund|refunded|got back)\D{0,20}(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)/i);
+ if(refund)return{intent:"refund",confidence:"high",original,date,amount:Number(refund[1].replaceAll(",","")),category:inferCategory(original),description:"Refund"};
 
- const income=text.match(/(?:salary|income|credited|received)\D{0,20}(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)/i);
- if(income&&!/returned|repaid|refund/.test(text))return{intent:"income",confidence:"high",original,date,amount:Number(income[1].replaceAll(",","")),category:"Income",description:/salary/.test(text)?"Salary":"Income"};
+ const income=original.match(/(?:salary|income|credited|received)\D{0,20}(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)/i);
+ if(income&&!/returned|repaid|refund/i.test(original))return{intent:"income",confidence:"high",original,date,amount:Number(income[1].replaceAll(",","")),category:"Income",description:/salary/i.test(original)?"Salary":"Income"};
 
- const goal=text.match(/(?:put|saved|added|set aside)\s*(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)\s+(?:toward|towards|for)\s+(.+)/i);
+ const goal=original.match(/(?:put|saved|added|set aside)\s*(?:₹|rs\.?\s*)?([0-9][0-9,]*(?:\.\d{1,2})?)\s+(?:toward|towards|for)\s+(.+)/i);
  if(goal){const goalName=cleanName(goal[2].replace(/\b(today|yesterday)\b/gi,"").trim());return{intent:"goal_contribution",confidence:"medium",original,date,amount:Number(goal[1].replaceAll(",","")),goalName,description:`Contribution to ${goalName}`};}
 
  const amount=moneyNumber(text);
  if(amount&&/(spent|spend|paid|pay|cost|bill|bought|purchase|had|went for)/.test(text)){
-   const category=inferCategory(text),friends=parseFriends(original),description=inferDescription(text,category);
+   const category=inferCategory(original),friends=parseFriends(original),description=inferDescription(original,category);
    return{intent:"expense",confidence:"high",original,date,amount,category,description,friends,assumption:friends.length?`Assuming the ₹${amount.toLocaleString("en-IN")} total was paid by you and split equally between you${friends.length?` and ${friends.join(", ")}`:""}.`:undefined};
  }
 
