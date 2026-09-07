@@ -11,12 +11,16 @@ export interface WrappedStats {
   topCategory: string | null;
   mostExpensiveMonth: string | null;
   lowestSpendMonth: string | null;
+  largestPurchase: number;
+  largestPurchaseLabel: string | null;
   movementDays: number;
   averageMood: number | null;
   checkInDays: number;
   journalDays: number;
   totalXp: number;
   coins: number;
+  comebackCount: number;
+  badgesUnlocked: number;
   themeWords: string[];
 }
 
@@ -34,6 +38,8 @@ export function buildWrappedStats(year: number, transactions: Transaction[], che
   const spendingMonths = monthly.filter((m) => m.personalSpending > 0);
   const most = [...spendingMonths].sort((a,b) => b.personalSpending-a.personalSpending)[0]?.period ?? null;
   const low = [...spendingMonths].sort((a,b) => a.personalSpending-b.personalSpending)[0]?.period ?? null;
+  const yearTx=transactions.filter(t=>t.date.startsWith(String(year))&&t.type==="expense");
+  const largest=[...yearTx].sort((a,b)=>Number(b.personal_amount??b.amount)-Number(a.personal_amount??a.amount))[0];
   const yearCheckins = checkIns.filter((c) => c.date.startsWith(String(year)));
   const averageMood = yearCheckins.length ? yearCheckins.reduce((s,c) => s + Number(c.mood || 0),0)/yearCheckins.length : null;
   const yearJournal = journal.filter((j) => j.date.startsWith(String(year)));
@@ -52,12 +58,16 @@ export function buildWrappedStats(year: number, transactions: Transaction[], che
     topCategory,
     mostExpensiveMonth: most,
     lowestSpendMonth: low,
+    largestPurchase:Number(largest?.personal_amount??largest?.amount??0),
+    largestPurchaseLabel:largest?.description||largest?.category||null,
     movementDays: yearCheckins.filter((c) => Number(c.movement_minutes || 0) > 0).length,
     averageMood,
     checkInDays: new Set(yearCheckins.map((c)=>c.date)).size,
     journalDays: new Set(yearJournal.map((j)=>j.date)).size,
     totalXp: yearRewards.reduce((s,r)=>s+Number(r.xp||0),0),
     coins: yearRewards.reduce((s,r)=>s+Number(r.coins||0),0),
+    comebackCount:yearRewards.filter(r=>r.action==="comeback").length,
+    badgesUnlocked:new Set(yearRewards.map(r=>r.badge).filter(Boolean)).size,
     themeWords
   };
 }
