@@ -6,6 +6,8 @@ Nudge is a responsive personal finance + investing + daily-life PWA. It is inten
 
 The financial source of truth is a **Google Sheet in the signed-in user's own Google Drive**. The web app turns that structured ledger into Money River, Spending Gardens, Wealth Garden, Goal Journeys, a Seed → Sprout → Seedling → Plant growth system, gentle weekly/monthly insights and Nudge Wrapped.
 
+> Deployment sync marker: Git-connected production should deploy the latest `main` commit automatically.
+
 ## Core behavior
 
 - Google Sheet source of truth with independently inspectable tabs
